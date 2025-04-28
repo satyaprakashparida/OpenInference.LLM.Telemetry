@@ -1,0 +1,58 @@
+# .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+*.sln.iml
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# Build results
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+*.vspscc
+*.vssscc
+
+# Test results
+TestResults/
+*.TestResults/
+
+# Others
+*.dbmdl
+*.bak
+*.backup
+*.tmp
+*.temp
+*.log
+*.vs/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# User-specific files
+*.swp
+*.swo
+*.orig
+
+# Azure Pipelines
+.azure-pipelines/
+
+# Local secrets
+secrets.json
+.env
+.env.*

@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.0-beta.1</Version>
+    <Authors>Satya Prakash Parida</Authors>
+    <Company>Microsoft</Company>
+    <Description>OpenInference implementation for C# developers to instrument and track LLM interactions with OpenTelemetry. Provides comprehensive telemetry for Azure OpenAI and OpenAI API calls.</Description>
+    <PackageTags>llm;telemetry;opentelemetry;openinference;azure;openai;instrumentation;observability;dotnet</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/yourusername/OpenInference.LLM.Telemetry</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <LangVersion>latest</LangVersion>
+    <!-- Enable nullability warnings -->
+    <WarningsAsErrors>nullable</WarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Explicitly mark as prerelease while using prerelease dependencies -->
+    <IsPackable>true</IsPackable>
+    <!-- Disable source link warnings when not in a git repo -->
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <DeterministicSourcePaths Condition="'$(GITHUB_ACTIONS)' == 'true'">true</DeterministicSourcePaths>
+  </PropertyGroup>
+
+  <!-- NuGet Package References -->
+  <ItemGroup>
+    <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.17" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="OpenTelemetry" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Api" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
+    
+    <!-- Only include SourceLink when in a git repository -->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" Condition="'$(GITHUB_ACTIONS)' == 'true' OR Exists('$(MSBuildThisFileDirectory)\.git')" />
+  </ItemGroup>
+
+  <!-- Package assets -->
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="USAGE.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!-- Keep folder structure -->
+  <ItemGroup>
+    <Folder Include="src\Core\" />
+    <Folder Include="src\Core\Models\" />
+    <Folder Include="src\Extensions\OpenTelemetry\Instrumentation\" />
+    <Folder Include="src\Extensions\DependencyInjection\" />
+    <Folder Include="src\Extensions\HttpClient\" />
+    <Folder Include="src\Providers\Azure\" />
+    <Folder Include="src\Providers\OpenAI\" />
+  </ItemGroup>  
+
+</Project>
