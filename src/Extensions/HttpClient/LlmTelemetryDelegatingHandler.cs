@@ -1,9 +1,5 @@
-using System;
 using System.Diagnostics;
-using System.Net.Http;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using OpenInference.LLM.Telemetry.Core.Models;
 
 namespace OpenInference.LLM.Telemetry.Extensions.HttpClient

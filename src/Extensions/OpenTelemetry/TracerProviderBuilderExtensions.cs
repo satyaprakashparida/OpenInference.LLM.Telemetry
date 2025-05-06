@@ -1,8 +1,6 @@
 using OpenInference.LLM.Telemetry.Core.Models;
 using OpenTelemetry.Trace;
-using System;
 using System.Diagnostics;
-using System.Collections.Generic;
 
 namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry
 {

@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using OpenInference.LLM.Telemetry.Core.Models;
-using System;
 
 namespace OpenInference.LLM.Telemetry.Extensions.HttpClient
 {

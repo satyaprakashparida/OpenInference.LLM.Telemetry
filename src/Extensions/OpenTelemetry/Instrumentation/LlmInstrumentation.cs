@@ -1,4 +1,3 @@
-using System;
 using OpenInference.LLM.Telemetry.Core.Models;
 using System.Diagnostics;
 

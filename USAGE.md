@@ -10,6 +10,7 @@ This document provides detailed examples and guidance for more advanced usage sc
 4. [Common Integration Patterns](#common-integration-patterns)
 5. [Handling Token Usage](#handling-token-usage)
 6. [Troubleshooting](#troubleshooting)
+7. [Semantic Kernel Integration](#semantic-kernel-integration)
 
 ## ASP.NET Core Integration
 
@@ -284,4 +285,105 @@ services.Configure<OpenTelemetryLoggerOptions>(options => {
     options.ParseStateValues = true;
     options.IncludeFormattedMessage = true;
 });
+```
+
+## Semantic Kernel Integration
+
+### Basic Integration
+
+Here's how to integrate OpenInference.LLM.Telemetry with Microsoft Semantic Kernel:
+
+```csharp
+// Set up telemetry options
+LLMTelemetry.Configure(options => {
+    options.EmitTextContent = true;
+    options.MaxTextLength = 1000;
+    options.EmitLatencyMetrics = true;
+    options.RecordModelName = true;
+});
+
+// Using the SemanticKernelAdapter for tracking chat completions
+var stopwatch = Stopwatch.StartNew();
+var chatHistory = new ChatHistory();
+chatHistory.AddSystemMessage("You are a helpful AI assistant.");
+chatHistory.AddUserMessage("What are the benefits of telemetry in AI systems?");
+
+var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+var chatResult = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
+stopwatch.Stop();
+
+// Track the chat completion with telemetry
+SemanticKernelAdapter.TrackChatCompletion(
+    chatHistory: chatHistory,
+    result: chatResult,
+    modelName: "gpt-4", // Or retrieve from service if available
+    latencyMs: stopwatch.ElapsedMilliseconds);
+```
+
+### Advanced Semantic Kernel Integration
+
+For more advanced scenarios, you can extract additional metadata from Semantic Kernel responses:
+
+```csharp
+// Extract token usage from chat completion result if available
+var tokenUsage = new Dictionary<string, int>();
+if (chatResult.Metadata != null && 
+    chatResult.Metadata.TryGetValue("Usage", out var usageObj) && 
+    usageObj is OpenAIUsage usage)
+{
+    tokenUsage["prompt_tokens"] = usage.PromptTokens;
+    tokenUsage["completion_tokens"] = usage.CompletionTokens;
+    tokenUsage["total_tokens"] = usage.TotalTokens;
+}
+
+// Create detailed operation data
+var operationData = SemanticKernelAdapter.CreateChatCompletionData(
+    chatHistory: chatHistory,
+    result: chatResult,
+    modelName: "gpt-4",
+    latencyMs: stopwatch.ElapsedMilliseconds,
+    isSuccess: true,
+    tokenUsage: tokenUsage);
+
+// Track the operation with instrumentation service if needed
+llmInstrumentation.TrackOperation(operationData);
+```
+
+### Adding Semantic Kernel Operations to a Workflow Chain
+
+You can integrate Semantic Kernel operations into multi-step workflows:
+
+```csharp
+public async Task<string> RunAIWorkflowAsync(string userQuery)
+{
+    var chainSteps = new List<LlmOperationData>();
+    var stopwatch = Stopwatch.StartNew();
+    
+    // Step 1: Use Semantic Kernel for initial processing
+    var chatHistory = new ChatHistory();
+    chatHistory.AddSystemMessage("You are a helpful AI assistant.");
+    chatHistory.AddUserMessage(userQuery);
+    
+    var chatResult = await _semanticKernel.GetRequiredService<IChatCompletionService>
+        .GetChatMessageContentAsync(chatHistory);
+    
+    // Create operation data for this step
+    var step1Data = SemanticKernelAdapter.CreateChatCompletionData(
+        chatHistory: chatHistory,
+        result: chatResult,
+        modelName: "gpt-4",
+        latencyMs: stopwatch.ElapsedMilliseconds);
+    
+    chainSteps.Add(step1Data);
+    
+    // Additional workflow steps can be added here...
+    
+    // Track the entire workflow
+    GenericLlmAdapter.TrackLlmChain(
+        operationName: "AI_Workflow",
+        chainSteps: chainSteps,
+        totalLatencyMs: stopwatch.ElapsedMilliseconds);
+    
+    return chatResult.Content;
+}
 ```

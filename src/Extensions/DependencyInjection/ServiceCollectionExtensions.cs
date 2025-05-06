@@ -3,10 +3,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenInference.LLM.Telemetry.Core.Models;
 using OpenInference.LLM.Telemetry.Extensions.HttpClient;
 using OpenInference.LLM.Telemetry.Extensions.OpenTelemetry.Instrumentation;
-using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using System;
 
 namespace OpenInference.LLM.Telemetry.Extensions.DependencyInjection
 {
@@ -97,6 +95,32 @@ namespace OpenInference.LLM.Telemetry.Extensions.DependencyInjection
             
             return services.AddHttpClient("AzureOpenAI", configureClient)
                 .AddLLMTelemetryWithDI(modelName, "azure");
+        }
+        
+        /// <summary>
+        /// Adds Semantic Kernel specific telemetry handlers to capture OpenInference telemetry from Semantic Kernel operations
+        /// </summary>
+        /// <param name="services">The service collection</param>
+        /// <returns>The service collection for chaining</returns>
+        public static IServiceCollection AddSemanticKernelTelemetry(this IServiceCollection services)
+        {
+            // Register the base OpenInference telemetry services
+            services.AddOpenInferenceLlmTelemetry();
+            
+            // Register Semantic Kernel specific services if needed
+            // (Currently, the adapter is static so no registration is required)
+            
+            return services;
+        }
+
+        /// <summary>
+        /// Configures OpenTelemetry tracing to include LLM telemetry
+        /// </summary>
+        /// <param name="builder">The TracerProviderBuilder</param>
+        /// <returns>The TracerProviderBuilder for chaining</returns>
+        public static TracerProviderBuilder AddLlmTelemetry(this TracerProviderBuilder builder)
+        {
+            return builder.AddSource(LLMTelemetry.ActivitySource.Name);
         }
     }
 }
