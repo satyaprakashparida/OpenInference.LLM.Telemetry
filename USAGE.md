@@ -138,17 +138,30 @@ builder.Services.AddOpenTelemetryWithLlmTracing(
 ### Using LlmInstrumentation Service
 
 ```csharp
+/// <summary>
+/// Service for handling LLM operations with proper telemetry integration
+/// </summary>
 public class MyLlmService
 {
     private readonly OpenAIClient _client;
     private readonly LlmInstrumentation _instrumentation;
     
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MyLlmService"/> class
+    /// </summary>
+    /// <param name="client">The OpenAI client for API communication</param>
+    /// <param name="instrumentation">The LLM instrumentation service for telemetry</param>
     public MyLlmService(OpenAIClient client, LlmInstrumentation instrumentation)
     {
         _client = client;
         _instrumentation = instrumentation;
     }
     
+    /// <summary>
+    /// Generates text from the given prompt with telemetry tracking
+    /// </summary>
+    /// <param name="prompt">The input prompt to send to the LLM</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the generated text response.</returns>
     public async Task<string> GenerateTextAsync(string prompt)
     {
         var activity = _instrumentation.StartOperation(
@@ -160,7 +173,9 @@ public class MyLlmService
         try
         {
             var stopwatch = Stopwatch.StartNew();
-            var options = new ChatCompletionsOptions { ... };
+            var options = new ChatCompletionsOptions { /* configure options */ };
+            
+            // Use async/await for the API call
             var response = await _client.GetChatCompletionsAsync(options);
             stopwatch.Stop();
             
