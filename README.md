@@ -3,13 +3,13 @@
 [![NuGet](https://img.shields.io/nuget/v/OpenInference.LLM.Telemetry.svg)](https://www.nuget.org/packages/OpenInference.LLM.Telemetry/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A comprehensive OpenTelemetry-based library for tracking and monitoring Large Language Model (LLM) operations in .NET applications according to the [OpenInference](https://github.com/Arize-ai/openinference) semantic convention standard.
+A OpenTelemetry-based library for tracking and monitoring Large Language Model (LLM) operations in .NET applications according to the [OpenInference](https://github.com/Arize-ai/openinference) semantic convention standard.
 
 ## Features
 
 - ✅ OpenInference compliant LLM telemetry instrumentation
 - ✅ Seamless integration with OpenTelemetry
-- ✅ Support for Azure OpenAI and OpenAI APIs
+- ✅ Generic LLM adapter and Semantic Kernel integration
 - ✅ Multiple integration patterns:
   - HTTP client handlers
   - Direct instrumentation
@@ -22,7 +22,7 @@ A comprehensive OpenTelemetry-based library for tracking and monitoring Large La
 
 ## Architecture Overview
 
-The library consists of several components that work together to provide comprehensive LLM telemetry:
+The library consists of several components that work together to provide comprehensive LLM telemetry.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -32,7 +32,7 @@ The library consists of several components that work together to provide compreh
 │  ┌───────────────────┐       ┌───────────────────────────────┐  │
 │  │                   │       │                               │  │
 │  │  LLM API Client   │◀─────▶│  LLMTelemetryHandler          │  │
-│  │                   │       │  (Automatic HTTP Telemetry)   │  │
+│  │                   │       │  (Async HTTP Telemetry)       │  │
 │  └───────────────────┘       └───────────────────────────────┘  │
 │            │                               │                    │
 │            ▼                               │                    │
@@ -75,12 +75,12 @@ The library consists of several components that work together to provide compreh
 
 ### Components:
 
-1. **LLMTelemetryHandler**: Intercepts HTTP requests to LLM APIs and automatically adds telemetry.
-2. **LLMTelemetry**: Core class with methods for creating and managing telemetry activities.
-3. **LlmInstrumentation**: Integration with OpenTelemetry for standardized tracing.
-4. **Manual Instrumentation**: Optional direct instrumentation for custom scenarios.
+1. **LLMTelemetryHandler**: Intercepts HTTP requests to LLM APIs and automatically adds telemetry with proper async/await patterns for all network operations.
+2. **LLMTelemetry**: Core static class with fully documented methods following C# standards, using underscore (_) prefixed private fields and proper error handling.
+3. **LlmInstrumentation**: Integration with OpenTelemetry for standardized tracing with full XML documentation and async operation support.
+4. **Manual Instrumentation**: Optional direct instrumentation for custom scenarios with examples following best C# coding practices.
 
-This architecture allows for flexible integration options while ensuring consistent telemetry data.
+This architecture allows for flexible integration options while ensuring consistent telemetry data and adherence to C# coding standards.
 
 ## Installation
 
@@ -432,25 +432,6 @@ Future enhancements aim to include direct cost attributes (e.g., `llm.usage.cost
 *   **Expanded Parameter Tracking:** More comprehensive capture of model configuration parameters (e.g., temperature, top_p, stop sequences).
 *   **Enhanced Visualization Examples:** Sample dashboards or configurations for popular monitoring tools.
 *   **Community-Driven Extensions:** Supporting contributions for specialized LLM use cases and emerging OpenInference attributes.
-
-## Attribute Comparison: OpenInference vs. OTel GenAI (Illustrative)
-
-This table provides an illustrative comparison of attribute areas. It will be updated as both standards evolve and as this SDK implements more specific OpenInference attributes.
-
-| Feature/Attribute Area        | OpenInference.LLM.Telemetry (Specific Examples/Focus) | OTel GenAI (General Coverage) | Notes                                                                 |
-| ----------------------------- | ----------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------- |
-| **Request/Response Text**     | `llm.request`, `llm.response`; explicit control via `EmitTextContent`, `MaxTextLength`, `SanitizeSensitiveInfo` | Basic request/response attributes | OpenInference (via this SDK) offers more explicit control over verbosity, length, and PII. |
-| **Token Counts**              | `llm.token_count.prompt`, `llm.token_count.completion`, `llm.token_count.total` (when `RecordTokenUsage` is true) | May include token counts        | OpenInference standardizes these crucial cost/usage metrics; this SDK makes them easily configurable. |
-| **Model Identification**      | `llm.model`, `llm.model_provider`                     | Similar attributes            | Consistent naming.                                                    |
-| **Operation Details**         | `llm.request_type`, `llm.latency_ms`, `llm.success`, `llm.error.message` | Similar attributes            | Core operational metrics are covered by both.                         |
-| **Model Parameters**          | (Planned: `llm.temperature`, `llm.top_p`, etc.)       | May include some parameters   | OpenInference aims for more comprehensive model parameter tracking.   |
-| **Cost Tracking**             | (Planned: `llm.usage.cost`)                           | Generally not specified       | A key planned differentiator for OpenInference.                       |
-| **PII Handling**              | `SanitizeSensitiveInfo` option for redaction          | Not explicitly defined        | Built-in, configurable feature in this SDK.                           |
-| **Azure Specifics**           | `AzureOpenAIAdapter` for detailed Azure metadata      | Generic provider attributes   | Deeper integration with Azure services via dedicated adapters.        |
-| **Streaming/Retries**         | (Planned: attributes for streaming events, retries)   | Basic operation status        | Future enhancements for more detailed operational insights.           |
-| **Workflow/Chain Tracking**   | `GenericLlmAdapter.TrackLlmChain` for multi-step ops  | Less explicit focus           | This SDK provides helpers for tracking complex LLM workflows.         |
-
-*Disclaimer: This table is for illustrative purposes. Refer to the official OpenInference and OpenTelemetry GenAI specifications for the most current and complete attribute lists.*
 
 ## License
 
