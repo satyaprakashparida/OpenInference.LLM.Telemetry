@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.0-beta.1</Version>
+    <Version>0.1.0-beta.2</Version>
     <Authors>Satya Prakash Parida</Authors>
     <Company>Microsoft</Company>
     <Description>OpenInference implementation for C# developers to instrument and track LLM interactions with OpenTelemetry. Provides comprehensive telemetry for Azure OpenAI and OpenAI API calls.</Description>
@@ -30,14 +30,14 @@
 
   <!-- NuGet Package References -->
   <ItemGroup>
-    <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.17" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.48.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
     <PackageReference Include="OpenTelemetry" Version="1.7.0" />
     <PackageReference Include="OpenTelemetry.Api" Version="1.7.0" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     
     <!-- Only include SourceLink when in a git repository -->
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" Condition="'$(GITHUB_ACTIONS)' == 'true' OR Exists('$(MSBuildThisFileDirectory)\.git')" />
@@ -56,8 +56,6 @@
     <Folder Include="src\Extensions\OpenTelemetry\Instrumentation\" />
     <Folder Include="src\Extensions\DependencyInjection\" />
     <Folder Include="src\Extensions\HttpClient\" />
-    <Folder Include="src\Providers\Azure\" />
-    <Folder Include="src\Providers\OpenAI\" />
   </ItemGroup>  
 
 </Project>
