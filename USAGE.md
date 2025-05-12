@@ -11,6 +11,7 @@ This document provides detailed examples and guidance for more advanced usage sc
 5. [Handling Token Usage](#handling-token-usage)
 6. [Troubleshooting](#troubleshooting)
 7. [Semantic Kernel Integration](#semantic-kernel-integration)
+8. [Updated Advanced Usage](#updated-advanced-usage)
 
 ## ASP.NET Core Integration
 
@@ -401,4 +402,57 @@ public async Task<string> RunAIWorkflowAsync(string userQuery)
     
     return chatResult.Content;
 }
+```
+
+## Updated Advanced Usage
+
+### Structured Logging with ILogger
+```csharp
+private static readonly ILogger? _logger;
+
+static GenericLlmAdapter()
+{
+    var loggerFactory = LoggerFactory.Create(builder =>
+        builder.AddConsole().SetMinimumLevel(LogLevel.Information));
+    _logger = loggerFactory.CreateLogger(typeof(GenericLlmAdapter));
+}
+
+_logger?.LogInformation("Tracking LLM operation for model {ModelName}", modelName);
+```
+
+### Cost Tracking Example
+```csharp
+if (operationData.Cost.HasValue)
+{
+    activity.SetTag(SemanticConventions.LLM_USAGE_COST, operationData.Cost.Value);
+    if (!string.IsNullOrEmpty(operationData.Currency))
+    {
+        activity.SetTag(SemanticConventions.LLM_USAGE_CURRENCY, operationData.Currency);
+    }
+}
+```
+
+### PII Sanitization Rules
+```csharp
+options.SanitizeSensitiveInfo = true; // Redacts sensitive information like credit card numbers and SSNs.
+```
+
+### Observability Configurations
+#### Grafana Dashboard
+1. Use Prometheus as the data source.
+2. Create panels for:
+   - LLM Request Count (`llm.requests.count`)
+   - LLM Latency (`llm.latency`)
+   - Token Usage (`llm.tokens.count`)
+   - Cost Tracking (`llm.cost`)
+
+#### Azure Monitor Integration
+```csharp
+builder.Services.AddOpenTelemetryWithLlmTracing(
+    serviceName: "MyService",
+    configurator => configurator
+        .AddAzureMonitorTraceExporter(options => {
+            options.ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+        })
+);
 ```

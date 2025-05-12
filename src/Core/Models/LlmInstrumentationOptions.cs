@@ -1,70 +1,120 @@
-using System;
+using OpenInference.LLM.Telemetry.Core.Utilities;
 
 namespace OpenInference.LLM.Telemetry.Core.Models
 {
     /// <summary>
-    /// Configuration options for LLM telemetry instrumentation
+    /// Options for configuring LLM telemetry instrumentation.
     /// </summary>
     public class LlmInstrumentationOptions
     {
-        private int _maxTextLength = 1000;
-        
         /// <summary>
-        /// Gets or sets whether to include prompt and response text content in telemetry.
-        /// When true, the actual text of prompts and responses are included in spans.
-        /// Default: true
+        /// Gets or sets whether to emit OpenTelemetry metrics.
         /// </summary>
-        public bool EmitTextContent { get; set; } = true;
+        public bool EmitMetrics { get; set; } = true;
         
         /// <summary>
-        /// Gets or sets the maximum length of text content to include in telemetry.
-        /// Text longer than this will be truncated to avoid excessive storage costs.
-        /// Default: 1000 characters
-        /// </summary>
-        public int MaxTextLength 
-        { 
-            get => _maxTextLength; 
-            set => _maxTextLength = value < 0 ? 0 : value; 
-        }
-        
-        /// <summary>
-        /// Gets or sets whether to emit latency metrics for LLM operations.
-        /// Default: true
+        /// Gets or sets whether to emit latency metrics.
         /// </summary>
         public bool EmitLatencyMetrics { get; set; } = true;
-        
+
         /// <summary>
-        /// Gets or sets whether to record the model name in telemetry.
-        /// Default: true
+        /// Gets or sets whether to capture structured error details.
+        /// </summary>
+        public bool CaptureStructuredErrors { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to include text content (prompts and responses) in telemetry.
+        /// </summary>
+        public bool EmitTextContent { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to record model name and provider information.
         /// </summary>
         public bool RecordModelName { get; set; } = true;
-        
+
         /// <summary>
         /// Gets or sets whether to record token usage information.
-        /// Default: true
         /// </summary>
         public bool RecordTokenUsage { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets whether to sanitize sensitive information in prompts.
-        /// When true, attempts to redact potential PII from telemetry.
-        /// Default: false
+        /// Gets or sets whether to record cost information.
         /// </summary>
-        public bool SanitizeSensitiveInfo { get; set; } = false;
-        
-        /// <summary>
-        /// Creates a new instance of LlmInstrumentationOptions with default settings
-        /// </summary>
-        public LlmInstrumentationOptions() { }
+        public bool RecordCostInformation { get; set; } = true;
 
         /// <summary>
-        /// Creates a validated copy of the options
+        /// Gets or sets whether to sanitize sensitive information like credit card numbers and SSNs.
         /// </summary>
-        internal LlmInstrumentationOptions Validate()
+        public bool SanitizeSensitiveInfo { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the maximum length of text content to include in telemetry.
+        /// </summary>
+        public int MaxTextLength { get; set; } = 10000;
+
+        /// <summary>
+        /// Gets or sets whether to capture embedding vectors in telemetry.
+        /// </summary>
+        public bool CaptureEmbeddingVectors { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets whether to include full document content in retrieval telemetry.
+        /// </summary>
+        public bool IncludeDocumentContent { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to capture tool call details.
+        /// </summary>
+        public bool CaptureToolCallDetails { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets default attributes to include in all telemetry.
+        /// </summary>
+        public Dictionary<string, object> DefaultAttributes { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Gets or sets the text sanitizer used to remove sensitive information.
+        /// </summary>
+        public ITextSanitizer TextSanitizer { get; set; } = new DefaultTextSanitizer();
+
+        /// <summary>
+        /// Adds a default attribute to be included in all telemetry.
+        /// </summary>
+        /// <param name="key">The attribute key.</param>
+        /// <param name="value">The attribute value.</param>
+        /// <returns>This options instance for chaining.</returns>
+        public LlmInstrumentationOptions AddDefaultAttribute(string key, object value)
         {
-            if (MaxTextLength < 0)
-                throw new ArgumentOutOfRangeException(nameof(MaxTextLength), "MaxTextLength cannot be negative");
-                
+            if (string.IsNullOrEmpty(key))
+                throw new ArgumentException("Key cannot be null or empty", nameof(key));
+
+            DefaultAttributes[key] = value;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets a custom text sanitizer.
+        /// </summary>
+        /// <param name="sanitizer">The sanitizer to use.</param>
+        /// <returns>This options instance for chaining.</returns>
+        public LlmInstrumentationOptions WithSanitizer(ITextSanitizer sanitizer)
+        {
+            TextSanitizer = sanitizer ?? throw new ArgumentNullException(nameof(sanitizer));
+            SanitizeSensitiveInfo = true;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the maximum length of text content to include in telemetry.
+        /// </summary>
+        /// <param name="maxLength">The maximum length.</param>
+        /// <returns>This options instance for chaining.</returns>
+        public LlmInstrumentationOptions WithMaxTextLength(int maxLength)
+        {
+            if (maxLength <= 0)
+                throw new ArgumentException("Maximum length must be greater than zero", nameof(maxLength));
+
+            MaxTextLength = maxLength;
             return this;
         }
     }

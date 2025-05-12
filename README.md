@@ -20,6 +20,12 @@ A OpenTelemetry-based library for tracking and monitoring Large Language Model (
   - ASP.NET Core
   - Any .NET application using OpenTelemetry
 
+### Updated Features
+- **Cost Tracking**: Added attributes for `llm.usage.cost` and `llm.usage.currency` to track LLM operation costs.
+- **PII Sanitization**: Extended sanitization rules to include credit card numbers and SSNs.
+- **Structured Logging**: Integrated `ILogger` for consistent structured logging across all adapters.
+- **Sample Observability Configurations**: Added examples for Grafana dashboards and Azure Monitor integration.
+
 ## Architecture Overview
 
 The library consists of several components that work together to provide comprehensive LLM telemetry.
@@ -181,6 +187,18 @@ AzureOpenAIAdapter.TrackChatCompletion(
     result: result.Value,
     modelName: "gpt-4",
     latencyMs: stopwatch.ElapsedMilliseconds);
+```
+
+#### ML.NET Pipelines Integration
+
+```csharp
+// Example integration with ML.NET pipeline
+var pipeline = new LearningPipeline();
+pipeline.Add(new TextLoader("data.csv"));
+pipeline.Add(new LlmTelemetryTransform());
+pipeline.Add(new StochasticDualCoordinateAscentClassifier());
+pipeline.Add(new PredictedLabelColumnOriginalValueConverter());
+var model = pipeline.Train<SentimentData, SentimentPrediction>();
 ```
 
 ### Configuration Options
@@ -354,7 +372,49 @@ OpenInference.LLM.Telemetry is built upon OpenTelemetry and is designed to compl
 
 ## FAQ: Why Use OpenInference.LLM.Telemetry?
 
-This section addresses common questions about the value and purpose of this SDK.
+### Problem Statement
+
+#### Limited Semantic Conventions
+OpenTelemetry's current AI semantic conventions (`gen_ai.*`) focus on general attributes (operation names, statuses) but lack detailed, domain-specific telemetry for LLMs.
+
+#### PII and Data Privacy Concerns
+Sensitive data (emails, phone numbers, API keys) often appear in telemetry, requiring robust sanitization mechanisms.
+
+#### Lack of .NET Support
+OpenInference SDKs exist for Python and TypeScript, but no official .NET support exists.
+
+#### Inconsistent Telemetry Across Platforms
+Diverse tools (Azure AI, AWS Bedrock, LlamaIndex, etc.) lack unified telemetry standards, especially in .NET.
+
+### Why OpenInference?
+
+#### Open Source Standard
+OpenInference (by Arize AI) provides detailed, domain-specific semantic conventions for LLM telemetry.
+
+#### Rich Telemetry Attributes
+- Structured prompts and responses
+- Token usage and cost tracking
+- Embedding details
+- Tool and function call metadata
+- Retrieval and document metadata
+- Prompt template tracking
+
+#### Industry Adoption
+Widely adopted in Python/TypeScript ecosystems (LangChain, LlamaIndex, AWS Bedrock, etc.)
+
+### Benefits to Industry or .NET Ecosystem
+
+#### Standardized Telemetry
+Establish consistent, standardized telemetry across .NET applications, Python-based solutions, and ML.NET pipeline workflows, enabling unified observability and streamlined collaboration across all teams.
+
+#### Enhanced Observability
+Detailed insights into LLM performance, usage, and costs.
+
+#### Improved Security
+Built-in PII sanitization ensures compliance and reduces risk.
+
+#### Cross-Platform Compatibility
+Aligns with OpenInference standards used across industry-leading tools.
 
 ### Q1: Why does this SDK exist alongside OpenTelemetry GenAI conventions?
 **A:** This SDK complements OpenTelemetry (OTel) GenAI conventions by providing a more specialized and richer set of telemetry attributes tailored for deep LLM observability. While OTel GenAI offers a foundational standard, OpenInference.LLM.Telemetry focuses on LLM-specific details (e.g., finer-grained token counts, cost attributes (planned), PII redaction controls), enabling more granular insights and control. It offers an incremental adoption path for teams evolving their observability maturity and requiring .NET-idiomatic solutions.
@@ -432,6 +492,29 @@ Future enhancements aim to include direct cost attributes (e.g., `llm.usage.cost
 *   **Expanded Parameter Tracking:** More comprehensive capture of model configuration parameters (e.g., temperature, top_p, stop sequences).
 *   **Enhanced Visualization Examples:** Sample dashboards or configurations for popular monitoring tools.
 *   **Community-Driven Extensions:** Supporting contributions for specialized LLM use cases and emerging OpenInference attributes.
+
+## Sample Observability Configurations
+
+#### Grafana Dashboard for LLM Telemetry
+
+1. Use Prometheus as the data source.
+2. Create a new dashboard with panels for:
+   - LLM Request Count (`llm.requests.count`)
+   - LLM Latency (`llm.latency`)
+   - Token Usage (`llm.tokens.count`)
+   - Cost Tracking (`llm.cost`)
+
+#### Azure Monitor Integration
+
+```csharp
+builder.Services.AddOpenTelemetryWithLlmTracing(
+    serviceName: "MyService",
+    configurator => configurator
+        .AddAzureMonitorTraceExporter(options => {
+            options.ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+        })
+);
+```
 
 ## License
 
