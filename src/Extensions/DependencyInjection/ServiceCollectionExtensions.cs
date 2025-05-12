@@ -1,126 +1,93 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenInference.LLM.Telemetry.Core.Models;
-using OpenInference.LLM.Telemetry.Extensions.HttpClient;
+using OpenInference.LLM.Telemetry.Core.Utilities;
 using OpenInference.LLM.Telemetry.Extensions.OpenTelemetry.Instrumentation;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 
 namespace OpenInference.LLM.Telemetry.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Extension methods for IServiceCollection
+    /// Extension methods for adding OpenInference LLM telemetry services to the DI container.
     /// </summary>
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds OpenInference LLM telemetry services to the service collection
+        /// Adds OpenInference LLM telemetry services to the DI container.
         /// </summary>
-        /// <param name="services">The service collection</param>
-        /// <param name="configure">Optional action to configure instrumentation options</param>
-        /// <returns>The updated service collection</returns>
-        public static IServiceCollection AddOpenInferenceLlmTelemetry(
-            this IServiceCollection services,
-            Action<LlmInstrumentationOptions>? configure = null)
+        /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+        /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
+        public static IServiceCollection AddOpenInferenceTelemetry(this IServiceCollection services)
         {
-            if (services == null) throw new ArgumentNullException(nameof(services));
-            
-            var options = new LlmInstrumentationOptions();
-            configure?.Invoke(options);
-            
-            // Apply global configuration
-            LLMTelemetry.Configure(opts => {
-                opts.EmitTextContent = options.EmitTextContent;
-                opts.MaxTextLength = options.MaxTextLength;
-                opts.EmitLatencyMetrics = options.EmitLatencyMetrics;
-                opts.RecordModelName = options.RecordModelName;
-                opts.RecordTokenUsage = options.RecordTokenUsage;
-                opts.SanitizeSensitiveInfo = options.SanitizeSensitiveInfo;
+            return AddOpenInferenceTelemetry(services, new LlmInstrumentationOptions());
+        }
+        
+        /// <summary>
+        /// Adds OpenInference LLM telemetry services to the DI container with the specified options.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+        /// <param name="options">The options for LLM telemetry instrumentation.</param>
+        /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
+        public static IServiceCollection AddOpenInferenceTelemetry(this IServiceCollection services, LlmInstrumentationOptions options)
+        {
+            if (services == null)
+                throw new ArgumentNullException(nameof(services));
+                
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
+            // Configure global options
+            LLMTelemetry.Configure(opt => 
+            {
+                opt.EmitTextContent = options.EmitTextContent;
+                opt.MaxTextLength = options.MaxTextLength;
+                opt.EmitLatencyMetrics = options.EmitLatencyMetrics;
+                opt.RecordModelName = options.RecordModelName;
+                opt.RecordTokenUsage = options.RecordTokenUsage;
+                opt.SanitizeSensitiveInfo = options.SanitizeSensitiveInfo;
+                opt.RecordCostInformation = options.RecordCostInformation;
+                opt.CaptureEmbeddingVectors = options.CaptureEmbeddingVectors;
+                opt.IncludeDocumentContent = options.IncludeDocumentContent;
+                opt.CaptureToolCallDetails = options.CaptureToolCallDetails;
+                opt.EmitMetrics = options.EmitMetrics;
+                opt.CaptureStructuredErrors = options.CaptureStructuredErrors;
+                
+                // Copy any default attributes
+                foreach (var attr in options.DefaultAttributes)
+                {
+                    opt.DefaultAttributes[attr.Key] = attr.Value;
+                }
             });
             
+            // Register the text sanitizer as a singleton
+            services.TryAddSingleton<ITextSanitizer>(options.TextSanitizer ?? new DefaultTextSanitizer());
+
+            // Register the instrumentation options
             services.TryAddSingleton(options);
+            
+            // Register the LLM instrumentation
             services.TryAddSingleton<LlmInstrumentation>();
             
             return services;
         }
         
         /// <summary>
-        /// Adds OpenTelemetry with LLM tracing to the service collection
+        /// Adds OpenInference LLM telemetry services to the DI container with the specified configuration.
         /// </summary>
-        /// <param name="services">The service collection</param>
-        /// <param name="serviceName">The name of the service for OpenTelemetry Resource</param>
-        /// <param name="configureTracerProvider">Optional action to further configure the tracer provider</param>
-        /// <returns>The updated service collection</returns>
-        public static IServiceCollection AddOpenTelemetryWithLlmTracing(
-            this IServiceCollection services,
-            string serviceName,
-            Action<TracerProviderBuilder>? configureTracerProvider = null)
+        /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+        /// <param name="configure">A delegate to configure the <see cref="LlmInstrumentationOptions"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
+        public static IServiceCollection AddOpenInferenceTelemetry(this IServiceCollection services, Action<LlmInstrumentationOptions> configure)
         {
-            if (services == null) throw new ArgumentNullException(nameof(services));
-            if (string.IsNullOrEmpty(serviceName)) throw new ArgumentException("Service name cannot be null or empty", nameof(serviceName));
+            if (services == null)
+                throw new ArgumentNullException(nameof(services));
+                
+            if (configure == null)
+                throw new ArgumentNullException(nameof(configure));
+                
+            var options = new LlmInstrumentationOptions();
+            configure(options);
             
-            services.AddOpenTelemetry()
-                .WithTracing(builder =>
-                {
-                    builder
-                        .AddSource(LLMTelemetry.ActivitySource.Name)
-                        .SetResourceBuilder(
-                            ResourceBuilder.CreateDefault()
-                                .AddService(serviceName)
-                                .AddAttributes(new[] {
-                                    new KeyValuePair<string, object>("service.instance.id", Environment.MachineName),
-                                    new KeyValuePair<string, object>("service.namespace", "OpenInference.LLM.Telemetry")
-                                }));
-                    
-                    configureTracerProvider?.Invoke(builder);
-                });
-            
-            return services;
-        }
-        
-        /// <summary>
-        /// Adds Azure OpenAI client with LLM telemetry
-        /// </summary>
-        /// <param name="services">The service collection</param>
-        /// <param name="configureClient">Action to configure the HTTP client</param>
-        /// <param name="modelName">The default model name to use</param>
-        /// <returns>The HTTP client builder for further configuration</returns>
-        public static IHttpClientBuilder AddAzureOpenAIClientWithTelemetry(
-            this IServiceCollection services,
-            Action<System.Net.Http.HttpClient> configureClient,
-            string modelName = "unknown")
-        {
-            if (services == null) throw new ArgumentNullException(nameof(services));
-            if (configureClient == null) throw new ArgumentNullException(nameof(configureClient));
-            
-            return services.AddHttpClient("AzureOpenAI", configureClient)
-                .AddLLMTelemetryWithDI(modelName, "azure");
-        }
-        
-        /// <summary>
-        /// Adds Semantic Kernel specific telemetry handlers to capture OpenInference telemetry from Semantic Kernel operations
-        /// </summary>
-        /// <param name="services">The service collection</param>
-        /// <returns>The service collection for chaining</returns>
-        public static IServiceCollection AddSemanticKernelTelemetry(this IServiceCollection services)
-        {
-            // Register the base OpenInference telemetry services
-            services.AddOpenInferenceLlmTelemetry();
-            
-            // Register Semantic Kernel specific services if needed
-            // (Currently, the adapter is static so no registration is required)
-            
-            return services;
-        }
-
-        /// <summary>
-        /// Configures OpenTelemetry tracing to include LLM telemetry
-        /// </summary>
-        /// <param name="builder">The TracerProviderBuilder</param>
-        /// <returns>The TracerProviderBuilder for chaining</returns>
-        public static TracerProviderBuilder AddLlmTelemetry(this TracerProviderBuilder builder)
-        {
-            return builder.AddSource(LLMTelemetry.ActivitySource.Name);
+            return AddOpenInferenceTelemetry(services, options);
         }
     }
 }

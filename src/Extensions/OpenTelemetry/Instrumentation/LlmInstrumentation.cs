@@ -1,5 +1,5 @@
-using OpenInference.LLM.Telemetry.Core.Models;
 using System.Diagnostics;
+using OpenInference.LLM.Telemetry.Core.Models;
 
 namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry.Instrumentation
 {
@@ -105,6 +105,16 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry.Instrumentation
                 isSuccess: isSuccess,
                 latencyMs: latencyMs,
                 options: _options);
+        }
+
+        /// <summary>
+        /// Records an exception in an LLM operation
+        /// </summary>
+        /// <param name="activity">The Activity to add the exception to</param>
+        /// <param name="exception">The exception that occurred</param>
+        public void RecordException(Activity? activity, Exception exception)
+        {
+            LLMTelemetry.RecordException(activity, exception);
         }
     }
 }
