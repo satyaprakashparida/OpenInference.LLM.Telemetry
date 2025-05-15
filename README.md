@@ -5,6 +5,49 @@
 
 A OpenTelemetry-based library for tracking and monitoring Large Language Model (LLM) operations in .NET applications according to the [OpenInference](https://github.com/Arize-ai/openinference) semantic convention standard.
 
+## Introducing OpenInference.LLM.Telemetry SDK for .NET
+
+### Bridging the Gap in LLM Telemetry Standardization
+
+This library addresses critical gaps in the .NET ecosystem for standardized LLM telemetry, implementing the OpenInference semantic conventions to provide comprehensive observability for LLM operations.
+
+### Problem Statement
+
+- **Lack of .NET Support:** OpenInference SDKs exist for Python and TypeScript, but no official .NET support exists.
+- **Limited Semantic Conventions:** OpenTelemetry's current AI semantic conventions (`gen_ai.*`) focus on general attributes (operation names, statuses) but lack detailed, domain-specific telemetry for LLMs.
+- **Inconsistent Telemetry Across Platforms:** Diverse tools (Azure AI, AWS Bedrock, LlamaIndex, etc.) lack unified telemetry standards, especially in .NET.
+- **PII and Data Privacy Concerns:** Sensitive data (emails, phone numbers, API keys) often appear in telemetry, requiring robust sanitization mechanisms.
+
+### Why OpenInference?
+
+#### Open Source Standard
+OpenInference (by Arize AI) provides detailed, domain-specific semantic conventions for LLM telemetry.
+
+#### Rich Telemetry Attributes
+- Structured prompts and responses
+- Token usage and cost tracking
+- Embedding details
+- Tool and function call metadata
+- Retrieval and document metadata
+- Prompt template tracking
+
+#### Industry Adoption
+Widely adopted in Python/TypeScript ecosystems (LangChain, LlamaIndex, AWS Bedrock, etc.)
+
+### OpenInference.LLM.Telemetry SDK for .NET
+
+- **Comprehensive Semantic Conventions:** Implements OpenInference semantic conventions in .NET, providing detailed telemetry attributes.
+- **Easy Integration:** Simple, intuitive APIs for .NET developers to instrument LLM operations.
+- **Flexible Instrumentation:** Supports Azure OpenAI, OpenAI direct, and generic LLM providers.
+- **Built-in PII Handling:** Automatic sanitization of sensitive data (emails, phone numbers, API keys, etc.).
+
+### Benefits to Industry or .NET Ecosystem
+
+- **Standardized Telemetry:** Establish consistent, standardized telemetry across .NET applications, Python-based solutions, and ML.NET pipeline workflows, enabling unified observability and streamlined collaboration across all teams.
+- **Enhanced Observability:** Detailed insights into LLM performance, usage, and costs.
+- **Cross-Platform Compatibility:** Aligns with OpenInference standards used across industry-leading tools.
+- **Improved Security:** Built-in PII sanitization ensures compliance and reduces risk.
+
 ## Features
 
 - ✅ OpenInference compliant LLM telemetry instrumentation
@@ -369,129 +412,6 @@ OpenInference.LLM.Telemetry is built upon OpenTelemetry and is designed to compl
     *   If you are already using OTel GenAI, you can introduce this SDK to capture additional OpenInference attributes for deeper insights without disrupting your existing setup. The SDK's activities will simply carry more LLM-specific tags.
     *   As OTel GenAI conventions evolve, this SDK will aim to maintain compatibility and continue to provide value through its .NET-specific features and potentially faster adoption of emerging LLM observability needs.
 *   **Exporting Data:** All telemetry captured by this SDK is standard OpenTelemetry data and can be exported using any OpenTelemetry-compatible exporter to backends like Azure Application Insights, Prometheus (for Grafana), Jaeger, Zipkin, OTLP collectors, etc., as shown in the Quick Start example.
-
-## FAQ: Why Use OpenInference.LLM.Telemetry?
-
-### Problem Statement
-
-#### Limited Semantic Conventions
-OpenTelemetry's current AI semantic conventions (`gen_ai.*`) focus on general attributes (operation names, statuses) but lack detailed, domain-specific telemetry for LLMs.
-
-#### PII and Data Privacy Concerns
-Sensitive data (emails, phone numbers, API keys) often appear in telemetry, requiring robust sanitization mechanisms.
-
-#### Lack of .NET Support
-OpenInference SDKs exist for Python and TypeScript, but no official .NET support exists.
-
-#### Inconsistent Telemetry Across Platforms
-Diverse tools (Azure AI, AWS Bedrock, LlamaIndex, etc.) lack unified telemetry standards, especially in .NET.
-
-### Why OpenInference?
-
-#### Open Source Standard
-OpenInference (by Arize AI) provides detailed, domain-specific semantic conventions for LLM telemetry.
-
-#### Rich Telemetry Attributes
-- Structured prompts and responses
-- Token usage and cost tracking
-- Embedding details
-- Tool and function call metadata
-- Retrieval and document metadata
-- Prompt template tracking
-
-#### Industry Adoption
-Widely adopted in Python/TypeScript ecosystems (LangChain, LlamaIndex, AWS Bedrock, etc.)
-
-### Benefits to Industry or .NET Ecosystem
-
-#### Standardized Telemetry
-Establish consistent, standardized telemetry across .NET applications, Python-based solutions, and ML.NET pipeline workflows, enabling unified observability and streamlined collaboration across all teams.
-
-#### Enhanced Observability
-Detailed insights into LLM performance, usage, and costs.
-
-#### Improved Security
-Built-in PII sanitization ensures compliance and reduces risk.
-
-#### Cross-Platform Compatibility
-Aligns with OpenInference standards used across industry-leading tools.
-
-### Q1: Why does this SDK exist alongside OpenTelemetry GenAI conventions?
-**A:** This SDK complements OpenTelemetry (OTel) GenAI conventions by providing a more specialized and richer set of telemetry attributes tailored for deep LLM observability. While OTel GenAI offers a foundational standard, OpenInference.LLM.Telemetry focuses on LLM-specific details (e.g., finer-grained token counts, cost attributes (planned), PII redaction controls), enabling more granular insights and control. It offers an incremental adoption path for teams evolving their observability maturity and requiring .NET-idiomatic solutions.
-
-### Q2: What makes this SDK particularly valuable for .NET developers?
-**A:** It provides a truly native .NET experience with:
-*   **Strong Typing:** Leveraging .NET's type system for configuration and data models.
-*   **Dependency Injection:** Seamless integration with .NET's dependency injection (DI) patterns.
-*   **Idiomatic Patterns:** Intuitive abstractions like `LlmInstrumentationOptions` and `Activity`-based tracing that align with modern .NET development practices.
-This makes implementation straightforward and enriches the .NET ecosystem for AI development.
-
-### Q3: How does this SDK enhance semantic conventions beyond OTel GenAI?
-**A:** The SDK implements OpenInference conventions, which often include richer and more fine-grained attributes. Examples include:
-*   **Detailed Token Counts:** Explicit attributes for `llm.token_count.prompt`, `llm.token_count.completion`, and `llm.token_count.total`.
-*   **Fine-grained Text Control:** Options like `EmitTextContent` and `MaxTextLength` for precise control over telemetry payload.
-*   **Privacy Features:** Built-in `SanitizeSensitiveInfo` for PII redaction.
-*   **Cost Tracking:** Planned attributes like `llm.usage.cost`.
-*   Potentially more detailed attributes for retries, streaming events, and model-specific parameters as the OpenInference standard evolves.
-
-### Q4: Is this SDK compatible with orchestration frameworks like LangChain or Semantic Kernel?
-**A:** Yes. The SDK is designed to be orchestration framework agnostic.
-*   **Semantic Kernel:** It includes dedicated adapters like `SemanticKernelAdapter` for seamless integration.
-*   **LangChain.NET & Custom Frameworks:** It provides standardized telemetry for teams using LangChain.NET, custom-built agentic systems, or direct SDK interactions with LLM providers. The `GenericLlmAdapter` and direct `LLMTelemetry` class usage support these scenarios.
-This ensures consistent observability regardless of your chosen orchestration tools. The `samples` directory includes examples for Semantic Kernel and custom framework usage.
-
-### Q5: Can this SDK be used in non-Azure or multi-cloud scenarios?
-**A:** Absolutely. While it offers first-class support and specific adapters for Azure AI services (e.g., `AzureOpenAIAdapter`), its core design and the underlying adapter pattern allow for pluggable LLM backends. The telemetry generated is based on the OpenInference standard, promoting interoperability across different LLM providers and cloud environments.
-
-### Q6: How does this SDK handle privacy and sensitive data in telemetry?
-**A:** The SDK includes a built-in option for PII (Personally Identifiable Information) redaction through the `SanitizeSensitiveInfo` property in `LlmInstrumentationOptions`. When enabled, it attempts to detect and redact common PII patterns (like emails, credit card numbers, SSNs) from telemetry data, helping to protect sensitive information before it's exported.
-
-### Q7: Does this SDK support Azure-specific LLM services better than generic telemetry?
-**A:** Yes, for Azure OpenAI, it provides specialized integration through the `AzureOpenAIAdapter`. This adapter is designed to understand the specific nuances of Azure OpenAI responses and can extract richer, more accurate telemetry (e.g., specific model deployment IDs, detailed usage information from Azure's response structure) compared to a generic approach that might not be tailored to Azure's specific metadata.
-
-### Q8: What are the benefits for teams migrating from custom telemetry implementations?
-**A:** Migrating to this SDK offers several advantages:
-*   **Standardization:** Adopts the OpenInference standard, aligning with a broader community and enabling the use of standard observability tools.
-*   **Reduced Maintenance:** Leverages a maintained library, reducing the burden of developing and managing custom telemetry code.
-*   **Richer Features:** Gains access to features like PII redaction, fine-grained telemetry controls, and framework adapters out-of-the-box.
-*   **Interoperability:** Improves interoperability with other systems and tools that support OpenTelemetry and OpenInference.
-*   **Future-Proofing:** Stays current with evolving LLM observability best practices through library updates.
-
-### Q9: How does this SDK help with LLM usage cost tracking and optimization?
-**A:** The SDK captures detailed token usage (prompt, completion, and total tokens) for each LLM operation when `RecordTokenUsage` is enabled. This granular data is crucial for:
-*   **Accurate Cost Tracking:** Correlating token consumption with LLM API costs.
-*   **Optimization:** Identifying high-cost operations, optimizing prompts, and selecting appropriate models to manage and reduce LLM expenses.
-Future enhancements aim to include direct cost attributes (e.g., `llm.usage.cost`) based on token counts and model pricing.
-
-### Q10: Is this SDK suitable for production-level AI observability needs?
-**A:** Yes. The SDK is designed with production use cases in mind, offering:
-*   **PII Redaction:** To protect sensitive data.
-*   **Configurable Verbosity:** To manage telemetry volume and cost.
-*   **Robust Error Handling:** To ensure telemetry capture doesn't disrupt application flow.
-*   **OpenTelemetry Alignment:** Ensures that the collected data can be exported to production-grade monitoring and observability platforms like Azure Application Insights, Grafana (via Prometheus/Loki), Datadog, New Relic, etc., for comprehensive AI observability.
-
-### Q11: What specific telemetry features does OpenInference.LLM.Telemetry provide? (Summary)
-**A:** Key features include:
-*   **Rich Content Analysis:** Full prompt and response tracking with configurable limits and PII redaction.
-*   **Performance Metrics:** Detailed latency tracking for optimizing LLM interactions.
-*   **Cost Management Data:** Granular token usage tracking (prompt, completion, total).
-*   **Error Handling:** Structured error capturing specific to LLM interactions.
-*   **Multi-provider Support:** Adapters for consistent telemetry across different LLM providers (initially Azure OpenAI, OpenAI, Semantic Kernel, with an extensible design).
-*   **Workflow Tracking:** Support for tracking complex multi-step LLM chains and agent workflows via `GenericLlmAdapter.TrackLlmChain`.
-
-### Q12: How does this SDK benefit the broader .NET ecosystem?
-**A:** It strengthens the .NET AI/ML landscape by:
-*   **Promoting Standardization:** Encouraging the adoption of OpenInference and OpenTelemetry for LLM observability.
-*   **Enhancing Interoperability:** Facilitating consistent telemetry practices across different .NET projects, frameworks, and even with Python-based systems using OpenInference.
-*   **Lowering Adoption Barriers:** Providing a ready-to-use, .NET-idiomatic library for robust LLM telemetry.
-
-### Q13: What future development is planned for OpenInference.LLM.Telemetry?
-**A:** We're actively working on enhancing the library, with plans for:
-*   **Broader Provider Support:** Adapters for additional LLM providers (e.g., Anthropic, Cohere, local models via Ollama).
-*   **Advanced Cost Tracking:** Direct financial cost attributes based on token usage and model pricing.
-*   **Expanded Parameter Tracking:** More comprehensive capture of model configuration parameters (e.g., temperature, top_p, stop sequences).
-*   **Enhanced Visualization Examples:** Sample dashboards or configurations for popular monitoring tools.
-*   **Community-Driven Extensions:** Supporting contributions for specialized LLM use cases and emerging OpenInference attributes.
 
 ## Sample Observability Configurations
 

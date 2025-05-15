@@ -5,14 +5,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.0-beta.5</Version>
+    <Version>0.1.0-beta.6</Version>
     <Authors>Satya Prakash Parida</Authors>
     <Company>Microsoft</Company>
     <Description>OpenInference implementation for C# developers to instrument and track LLM interactions with OpenTelemetry. Provides comprehensive telemetry for Azure OpenAI and OpenAI API calls.</Description>
     <PackageTags>llm;telemetry;opentelemetry;openinference;azure;openai;instrumentation;observability;dotnet</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/yourusername/OpenInference.LLM.Telemetry</RepositoryUrl>
+    <RepositoryUrl>https://github.com/satyaprakashparida/OpenInference.LLM.Telemetry</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
