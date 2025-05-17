@@ -9,9 +9,10 @@ This document provides detailed examples and guidance for more advanced usage sc
 3. [Custom Telemetry Exporters](#custom-telemetry-exporters)
 4. [Common Integration Patterns](#common-integration-patterns)
 5. [Handling Token Usage](#handling-token-usage)
-6. [Troubleshooting](#troubleshooting)
-7. [Semantic Kernel Integration](#semantic-kernel-integration)
-8. [Updated Advanced Usage](#updated-advanced-usage)
+6. [HTTP Timeout Configuration](#http-timeout-configuration)
+7. [Troubleshooting](#troubleshooting)
+8. [Semantic Kernel Integration](#semantic-kernel-integration)
+9. [Updated Advanced Usage](#updated-advanced-usage)
 
 ## ASP.NET Core Integration
 
@@ -50,7 +51,7 @@ builder.Services.AddHttpClient("AzureOpenAI", client => {
     client.BaseAddress = new Uri(builder.Configuration["AzureOpenAI:Endpoint"]);
     client.DefaultRequestHeaders.Add("api-key", builder.Configuration["AzureOpenAI:ApiKey"]);
 })
-.AddLLMTelemetryWithDI("gpt-4", "azure");
+.AddLlmTelemetryWithDI("gpt-4", "azure");
 
 var app = builder.Build();
 
@@ -191,8 +192,7 @@ public class MyLlmService
             return responseText;
         }
         catch (Exception ex)
-        {
-            LLMTelemetry.RecordException(activity, ex);
+        {            LlmTelemetry.RecordException(activity, ex);
             throw;
         }
     }
@@ -249,7 +249,7 @@ public async Task<string> GenerateTextWithDetailedTelemetry(string prompt)
 The library makes it easy to track token usage in your LLM calls:
 
 ```csharp
-using var activity = LLMTelemetry.StartLLMActivity(
+using var activity = LlmTelemetry.StartLlmActivity(
     modelName: "gpt-4",
     prompt: prompt,
     taskType: "chat",
@@ -265,11 +265,77 @@ if (activity != null && response.Value.Usage != null)
     activity.SetTag(Core.SemanticConventions.LLM_TOKEN_COUNT_TOTAL, response.Value.Usage.TotalTokens);
 }
 
-LLMTelemetry.EndLLMActivity(
+LlmTelemetry.EndLlmActivity(
     activity: activity,
     response: response.Value.Choices[0].Message.Content,
-    isSuccess: true,
-    latencyMs: stopwatch.ElapsedMilliseconds);
+    isSuccess: true,    latencyMs: stopwatch.ElapsedMilliseconds);
+```
+
+## HTTP Timeout Configuration
+
+LLM API calls can sometimes take a long time to complete, especially with more complex prompts or during high traffic periods. The OpenInference.LLM.Telemetry library provides built-in support for configuring timeouts for HTTP operations.
+
+### Setting Global Timeout Configuration
+
+When configuring the OpenInference telemetry, you can specify a global timeout for all HTTP operations:
+
+```csharp
+// Configure OpenInference LLM Telemetry with timeout settings
+builder.Services.AddOpenInferenceLlmTelemetry(options => {
+    options.EmitTextContent = true;
+    options.SanitizeSensitiveInfo = true;
+    
+    // Set a 30-second timeout for all HTTP operations
+    options.HttpOperationTimeoutMs = 30000;
+});
+```
+
+### Using Timeout Configuration with HttpClient
+
+You can use the HttpClientTimeoutExtensions to easily apply timeout settings to your HttpClient instances:
+
+```csharp
+// Add HTTP client with LLM telemetry and timeout handling
+builder.Services.AddLlmHttpClientWithTimeout(
+    "AzureOpenAI",
+    "gpt-4",
+    "azure",
+    new LlmInstrumentationOptions { HttpOperationTimeoutMs = 60000 } // 60-second timeout
+);
+
+// Or configure an existing HttpClient
+httpClient.ConfigureTimeoutFromOptions(new LlmInstrumentationOptions {
+    HttpOperationTimeoutMs = 45000 // 45-second timeout
+});
+```
+
+### Manual Timeout Handling
+
+For more advanced scenarios, you can use the HttpOperationUtils directly:
+
+```csharp
+// Execute an HTTP operation with timeout handling
+var response = await HttpOperationUtils.ExecuteWithTimeout(
+    options, // Your LlmInstrumentationOptions
+    async (token) => await httpClient.GetAsync("https://api.example.com/v1/completions", token),
+    cancellationToken);
+```
+
+### Handling Timeout Exceptions
+
+The library provides special handling for timeout exceptions:
+
+```csharp
+try {
+    // Execute LLM API call
+    var result = await llmService.GetCompletionAsync(prompt);
+    // Process result...
+}
+catch (TimeoutException ex) {
+    logger.LogWarning("LLM API call timed out after {Timeout}ms: {Message}", 
+        options.HttpOperationTimeoutMs, ex.Message);
+    // Implement fallback strategy or retry logic
+}
 ```
 
 ## Troubleshooting
@@ -278,7 +344,7 @@ LLMTelemetry.EndLLMActivity(
 
 1. Verify that you've added the correct OpenTelemetry exporters
 2. Confirm that you've called `AddOpenInferenceLlmTelemetry` in your service configuration
-3. Make sure `LLMTelemetry.ActivitySource` is registered with your TracerProvider
+3. Make sure `LlmTelemetry.ActivitySource` is registered with your TracerProvider
 
 ### Activity Data Missing Expected Fields
 
@@ -311,7 +377,7 @@ Here's how to integrate OpenInference.LLM.Telemetry with Microsoft Semantic Kern
 
 ```csharp
 // Set up telemetry options
-LLMTelemetry.Configure(options => {
+LlmTelemetry.Configure(options => {
     options.EmitTextContent = true;
     options.MaxTextLength = 1000;
     options.EmitLatencyMetrics = true;

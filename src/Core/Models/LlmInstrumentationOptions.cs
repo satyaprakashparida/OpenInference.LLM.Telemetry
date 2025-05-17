@@ -46,6 +46,12 @@ namespace OpenInference.LLM.Telemetry.Core.Models
         /// Gets or sets whether to sanitize sensitive information like credit card numbers and SSNs.
         /// </summary>
         public bool SanitizeSensitiveInfo { get; set; } = true;
+        
+        /// <summary>
+        /// Gets or sets the timeout in milliseconds for HTTP operations related to LLM telemetry.
+        /// A value of 0 or negative means no timeout (uses default HttpClient timeout).
+        /// </summary>
+        public int HttpOperationTimeoutMs { get; set; } = 30000;
 
         /// <summary>
         /// Gets or sets the maximum length of text content to include in telemetry.

@@ -58,7 +58,7 @@ namespace OpenInference.LLM.Telemetry.Providers.Generic
                 provider: provider,
                 tokenUsage: tokenUsage);
                 
-            return LLMTelemetry.TrackLlmOperation(operationData, instrumentationOptions);
+            return LlmTelemetry.TrackLlmOperation(operationData, instrumentationOptions);
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace OpenInference.LLM.Telemetry.Providers.Generic
                     operationData.TotalTokens = totalTokens;
             }
             
-            return LLMTelemetry.TrackLlmOperation(operationData, instrumentationOptions);
+            return LlmTelemetry.TrackLlmOperation(operationData, instrumentationOptions);
         }
         
         /// <summary>
@@ -178,7 +178,7 @@ namespace OpenInference.LLM.Telemetry.Providers.Generic
                     operationData.TotalTokens = totalTokens;
             }
             
-            return LLMTelemetry.TrackLlmOperation(operationData, instrumentationOptions);
+            return LlmTelemetry.TrackLlmOperation(operationData, instrumentationOptions);
         }
 
         /// <summary>
@@ -214,7 +214,7 @@ namespace OpenInference.LLM.Telemetry.Providers.Generic
                 }
             };
             
-            return LLMTelemetry.TrackLlmOperation(operationData, instrumentationOptions);
+            return LlmTelemetry.TrackLlmOperation(operationData, instrumentationOptions);
         }
         
         /// <summary>
@@ -289,7 +289,7 @@ namespace OpenInference.LLM.Telemetry.Providers.Generic
             Dictionary<string, object>? additionalAttributes = null)
         {
             // Create a parent activity for the entire chain
-            var parentActivity = LLMTelemetry.ActivitySource.StartActivity(
+            var parentActivity = LlmTelemetry.ActivitySource.StartActivity(
                 operationName,
                 ActivityKind.Internal);
 
@@ -316,7 +316,7 @@ namespace OpenInference.LLM.Telemetry.Providers.Generic
                     try
                     {
                         // Create child activity for this step
-                        using var childActivity = LLMTelemetry.ActivitySource.StartActivity(
+                        using var childActivity = LlmTelemetry.ActivitySource.StartActivity(
                             $"{operationName}.step{stepIndex}", 
                             ActivityKind.Internal,
                             parentActivity.Context);
@@ -384,7 +384,7 @@ namespace OpenInference.LLM.Telemetry.Providers.Generic
                 throw new ArgumentNullException(nameof(operationData));
             
             var stopwatch = Stopwatch.StartNew();
-            var activity = LLMTelemetry.StartLLMActivity(
+            var activity = LlmTelemetry.StartLlmActivity(
                 modelName: operationData.ModelName ?? "unknown",
                 prompt: operationData.Prompt ?? string.Empty,
                 taskType: operationData.TaskType ?? "completion",
@@ -407,7 +407,7 @@ namespace OpenInference.LLM.Telemetry.Providers.Generic
                 // End the activity with success
                 if (activity != null)
                 {
-                    LLMTelemetry.EndLLMActivity(
+                    LlmTelemetry.EndLlmActivity(
                         activity: activity,
                         response: operationData.Response ?? string.Empty,
                         isSuccess: true,
@@ -429,7 +429,7 @@ namespace OpenInference.LLM.Telemetry.Providers.Generic
                 // Record exception in activity
                 if (activity != null)
                 {
-                    LLMTelemetry.RecordException(activity, ex);
+                    LlmTelemetry.RecordException(activity, ex);
                     activity.Stop();
                 }
                 

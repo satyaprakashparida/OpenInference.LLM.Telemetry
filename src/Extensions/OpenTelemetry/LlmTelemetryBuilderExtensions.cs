@@ -34,10 +34,10 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry
                 throw new ArgumentNullException(nameof(options));
             
             // Register the Activity source with OpenTelemetry
-            builder.AddSource(LLMTelemetry.ActivitySource.Name);
+            builder.AddSource(LlmTelemetry.ActivitySource.Name);
             
-            // Configure the global LLMTelemetry options
-            LLMTelemetry.Configure(opt => 
+            // Configure the global LlmTelemetry options
+            LlmTelemetry.Configure(opt => 
             {
                 opt.EmitTextContent = options.EmitTextContent;
                 opt.MaxTextLength = options.MaxTextLength;

@@ -19,7 +19,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             
-            return builder.AddSource(LLMTelemetry.ActivitySource.Name);
+            return builder.AddSource(LlmTelemetry.ActivitySource.Name);
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry
             configure(options);
             
             // Apply configuration to the global LLM telemetry
-            LLMTelemetry.Configure(opts => 
+            LlmTelemetry.Configure(opts => 
             {
                 opts.EmitTextContent = options.EmitTextContent;
                 opts.MaxTextLength = options.MaxTextLength;
@@ -49,7 +49,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry
                 opts.SanitizeSensitiveInfo = options.SanitizeSensitiveInfo;
             });
             
-            return builder.AddSource(LLMTelemetry.ActivitySource.Name);
+            return builder.AddSource(LlmTelemetry.ActivitySource.Name);
         }
         
         /// <summary>
@@ -66,15 +66,15 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry
             builder.AddProcessor(new SimpleActivityProcessor(activity =>
             {
                 // Only process LLM spans
-                if (activity.Source.Name == LLMTelemetry.ActivitySource.Name)
+                if (activity.Source.Name == LlmTelemetry.ActivitySource.Name)
                 {
                     // Add process information for diagnostics
                     activity.SetTag("process.runtime", "dotnet");
                     activity.SetTag("process.runtime.version", Environment.Version.ToString());
                     
                     // Add OpenInference specific metadata
-                    activity.SetTag("openinference.name", typeof(LLMTelemetry).Assembly.GetName().Name);
-                    activity.SetTag("openinference.version", typeof(LLMTelemetry).Assembly.GetName().Version?.ToString());
+                    activity.SetTag("openinference.name", typeof(LlmTelemetry).Assembly.GetName().Name);
+                    activity.SetTag("openinference.version", typeof(LlmTelemetry).Assembly.GetName().Version?.ToString());
                 }
                 
                 return true; // Continue with other processors

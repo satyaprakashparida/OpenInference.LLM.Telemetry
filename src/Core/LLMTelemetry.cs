@@ -9,7 +9,7 @@ namespace OpenInference.LLM.Telemetry.Core
     /// <summary>
     /// Core class for LLM telemetry instrumentation.
     /// </summary>
-    public static class LLMTelemetry
+    public static class LlmTelemetry
     {
         private static readonly ActivitySource _activitySource = new ActivitySource("OpenInference.LLM.Telemetry", "1.0.0");
         private static readonly Meter _meter = new Meter("OpenInference.LLM.Telemetry", "1.0.0");
@@ -27,7 +27,7 @@ namespace OpenInference.LLM.Telemetry.Core
         /// </summary>
         public static ActivitySource ActivitySource => _activitySource;
 
-        static LLMTelemetry()
+        static LlmTelemetry()
         {
             // Initialize metrics
             _llmRequestCounter = _meter.CreateCounter<long>("llm.requests.count", "requests", "Number of LLM requests");
@@ -58,7 +58,7 @@ namespace OpenInference.LLM.Telemetry.Core
         /// <param name="provider">The model provider (e.g. "azure", "openai", "anthropic").</param>
         /// <param name="options">Optional instrumentation options that override global options.</param>
         /// <returns>The created activity.</returns>
-        public static Activity? StartLLMActivity(
+        public static Activity? StartLlmActivity(
             string modelName,
             string prompt,
             string taskType,
@@ -122,7 +122,7 @@ namespace OpenInference.LLM.Telemetry.Core
         /// <param name="isSuccess">Whether the operation was successful.</param>
         /// <param name="latencyMs">The latency of the operation in milliseconds.</param>
         /// <param name="options">Optional instrumentation options that override global options.</param>
-        public static void EndLLMActivity(
+        public static void EndLlmActivity(
             Activity? activity,
             string response,
             bool isSuccess,
@@ -199,7 +199,7 @@ namespace OpenInference.LLM.Telemetry.Core
                 
             var opts = options ?? _options;
             
-            var activity = StartLLMActivity(
+            var activity = StartLlmActivity(
                 operationData.ModelName ?? "unknown",
                 operationData.Prompt ?? string.Empty,
                 operationData.TaskType ?? "unknown",
@@ -379,7 +379,7 @@ namespace OpenInference.LLM.Telemetry.Core
                     activity.SetTag(SemanticConventions.LLM_ERROR_MESSAGE, operationData.ErrorMessage);
                 }
                 
-                EndLLMActivity(
+                EndLlmActivity(
                     activity,
                     operationData.Response ?? string.Empty,
                     operationData.IsSuccess,
@@ -402,6 +402,24 @@ namespace OpenInference.LLM.Telemetry.Core
                 
             activity.SetTag(SemanticConventions.LLM_SUCCESS, false);
             activity.SetTag(SemanticConventions.LLM_ERROR_MESSAGE, exception.Message);
+            
+            // Record the exception
+            activity.RecordException(exception);
+        }
+        
+        /// <summary>
+        /// Records an exception in an LLM activity with a custom error message.
+        /// </summary>
+        /// <param name="activity">The activity to record the exception in.</param>
+        /// <param name="exception">The exception to record.</param>
+        /// <param name="errorMessage">Custom error message to record instead of using exception.Message.</param>
+        public static void RecordException(Activity? activity, Exception exception, string errorMessage)
+        {
+            if (activity == null || exception == null)
+                return;
+                
+            activity.SetTag(SemanticConventions.LLM_SUCCESS, false);
+            activity.SetTag(SemanticConventions.LLM_ERROR_MESSAGE, errorMessage);
             
             // Record the exception
             activity.RecordException(exception);
@@ -430,14 +448,14 @@ namespace OpenInference.LLM.Telemetry.Core
                 throw new ArgumentNullException(nameof(operation));
                 
             var stopwatch = Stopwatch.StartNew();
-            var activity = StartLLMActivity(modelName, prompt, taskType, provider, options);
+            var activity = StartLlmActivity(modelName, prompt, taskType, provider, options);
             
             try
             {
                 var result = await operation().ConfigureAwait(false);
                 stopwatch.Stop();
                 
-                EndLLMActivity(activity, result?.ToString() ?? string.Empty, true, stopwatch.ElapsedMilliseconds, options);
+                EndLlmActivity(activity, result?.ToString() ?? string.Empty, true, stopwatch.ElapsedMilliseconds, options);
                 
                 return result;
             }
@@ -446,7 +464,7 @@ namespace OpenInference.LLM.Telemetry.Core
                 stopwatch.Stop();
                 
                 RecordException(activity, ex);
-                EndLLMActivity(activity, string.Empty, false, stopwatch.ElapsedMilliseconds, options);
+                EndLlmActivity(activity, string.Empty, false, stopwatch.ElapsedMilliseconds, options);
                 
                 throw;
             }

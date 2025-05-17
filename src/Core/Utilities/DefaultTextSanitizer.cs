@@ -57,23 +57,42 @@ namespace OpenInference.LLM.Telemetry.Core.Utilities
         }
 
         /// <summary>
-        /// Sanitizes text by applying all configured sanitization rules.
+        /// Sanitizes text by applying all configured sanitization rules to mask sensitive information.
         /// </summary>
-        /// <param name="text">The text to sanitize.</param>
-        /// <returns>The sanitized text with sensitive information masked.</returns>
+        /// <param name="text">The input text to sanitize.</param>
+        /// <returns>Sanitized text with sensitive information masked.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when text is null.</exception>
         public string Sanitize(string text)
         {
-            if (string.IsNullOrEmpty(text))
-                return text;
-
-            string sanitized = text;
+            if (text == null)
+                throw new ArgumentNullException(nameof(text));
             
-            foreach (var (pattern, replacement) in _sanitizationRules)
+            if (string.IsNullOrWhiteSpace(text))
+                return text;
+            
+            try
             {
-                sanitized = pattern.Replace(sanitized, replacement);
+                string sanitizedText = text;
+                
+                foreach (var (pattern, replacement) in _sanitizationRules)
+                {
+                    sanitizedText = pattern.Replace(sanitizedText, replacement);
+                }
+                
+                return sanitizedText;
             }
-
-            return sanitized;
+            catch (RegexMatchTimeoutException ex)
+            {
+                // Log the exception but return the original text to prevent blocking the telemetry pipeline
+                System.Diagnostics.Debug.WriteLine($"Regex timeout during text sanitization: {ex.Message}");
+                return "[SANITIZATION_FAILED]";
+            }
+            catch (Exception ex)
+            {
+                // Log the exception but return safely
+                System.Diagnostics.Debug.WriteLine($"Exception during text sanitization: {ex.Message}");
+                return "[SANITIZATION_ERROR]";
+            }
         }
 
         /// <summary>

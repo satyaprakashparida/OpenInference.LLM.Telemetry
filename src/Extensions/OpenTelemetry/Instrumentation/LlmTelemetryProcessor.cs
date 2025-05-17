@@ -57,7 +57,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry.Instrumentation
         /// <returns>True if the activity is from our LLM telemetry source, false otherwise.</returns>
         private static bool IsLlmActivity(Activity activity)
         {
-            return activity.Source.Name == LLMTelemetry.ActivitySource.Name;
+            return activity.Source.Name == LlmTelemetry.ActivitySource.Name;
         }
     }
 }

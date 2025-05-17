@@ -38,14 +38,14 @@ namespace OpenInference.LLM.Telemetry.Providers.SemanticKernel
                 promptBuilder.AppendLine($"[{message.Role}]: {message.Content}");
             }
 
-            using var activity = LLMTelemetry.StartLLMActivity(
+            using var activity = LlmTelemetry.StartLlmActivity(
                 modelName: modelName,
                 prompt: promptBuilder.ToString(),
                 taskType: "chat",
                 provider: "semantic_kernel",
                 options: instrumentationOptions);
 
-            LLMTelemetry.EndLLMActivity(
+            LlmTelemetry.EndLlmActivity(
                 activity: activity,
                 response: result.Content ?? string.Empty,
                 isSuccess: true,
@@ -95,14 +95,14 @@ namespace OpenInference.LLM.Telemetry.Providers.SemanticKernel
         {
             if (result == null) return;
 
-            using var activity = LLMTelemetry.StartLLMActivity(
+            using var activity = LlmTelemetry.StartLlmActivity(
                 modelName: modelName,
                 prompt: prompt,
                 taskType: "completion",
                 provider: "semantic_kernel", 
                 options: instrumentationOptions);
 
-            LLMTelemetry.EndLLMActivity(
+            LlmTelemetry.EndLlmActivity(
                 activity: activity,
                 response: result.Text ?? string.Empty,
                 isSuccess: true,
@@ -424,7 +424,7 @@ namespace OpenInference.LLM.Telemetry.Providers.SemanticKernel
                 }
                 
                 // Track the failed operation
-                var activity = LLMTelemetry.StartLLMActivity(
+                var activity = LlmTelemetry.StartLlmActivity(
                     modelName: modelName,
                     prompt: promptBuilder.ToString(),
                     taskType: "chat",
@@ -433,9 +433,9 @@ namespace OpenInference.LLM.Telemetry.Providers.SemanticKernel
                 
                 if (activity != null)
                 {
-                    LLMTelemetry.RecordException(activity, ex);
+                    LlmTelemetry.RecordException(activity, ex);
                     
-                    LLMTelemetry.EndLLMActivity(
+                    LlmTelemetry.EndLlmActivity(
                         activity: activity,
                         response: string.Empty,
                         isSuccess: false,
@@ -501,7 +501,7 @@ namespace OpenInference.LLM.Telemetry.Providers.SemanticKernel
                 stopwatch.Stop();
                 
                 // Track the failed operation
-                var activity = LLMTelemetry.StartLLMActivity(
+                var activity = LlmTelemetry.StartLlmActivity(
                     modelName: modelName,
                     prompt: prompt,
                     taskType: "completion",
@@ -510,9 +510,9 @@ namespace OpenInference.LLM.Telemetry.Providers.SemanticKernel
                 
                 if (activity != null)
                 {
-                    LLMTelemetry.RecordException(activity, ex);
+                    LlmTelemetry.RecordException(activity, ex);
                     
-                    LLMTelemetry.EndLLMActivity(
+                    LlmTelemetry.EndLlmActivity(
                         activity: activity,
                         response: string.Empty,
                         isSuccess: false,
@@ -683,7 +683,7 @@ namespace OpenInference.LLM.Telemetry.Providers.SemanticKernel
                 }
                 
                 // Track the failed operation
-                var activity = LLMTelemetry.StartLLMActivity(
+                var activity = LlmTelemetry.StartLlmActivity(
                     modelName: _modelName,
                     prompt: promptBuilder.ToString(),
                     taskType: "chat",
@@ -692,9 +692,9 @@ namespace OpenInference.LLM.Telemetry.Providers.SemanticKernel
                 
                 if (activity != null)
                 {
-                    LLMTelemetry.RecordException(activity, ex);
+                    LlmTelemetry.RecordException(activity, ex);
                     
-                    LLMTelemetry.EndLLMActivity(
+                    LlmTelemetry.EndLlmActivity(
                         activity: activity,
                         response: _resultBuilder.ToString(),
                         isSuccess: false,

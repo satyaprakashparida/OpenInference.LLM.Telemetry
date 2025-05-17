@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Text;
+using OpenInference.LLM.Telemetry.Core;
 using OpenInference.LLM.Telemetry.Core.Models;
+using OpenInference.LLM.Telemetry.Core.Utilities;
 
 namespace OpenInference.LLM.Telemetry.Extensions.HttpClient
 {
@@ -53,10 +55,13 @@ namespace OpenInference.LLM.Telemetry.Extensions.HttpClient
             
             string? requestBody = null;
             if (request.Content != null && (_options?.EmitTextContent ?? true))
-            {
-                try
+            {                try
                 {
-                    requestBody = await request.Content.ReadAsStringAsync(cancellationToken);
+                    // Use HttpOperationUtils for timeout handling in content reading
+                    requestBody = await HttpOperationUtils.ExecuteWithTimeout(
+                        _options, 
+                        async (token) => await request.Content.ReadAsStringAsync(token),
+                        cancellationToken).ConfigureAwait(false);
                     
                     // Create a clone of the content since ReadAsStringAsync can consume it
                     request.Content = new StringContent(
@@ -73,26 +78,33 @@ namespace OpenInference.LLM.Telemetry.Extensions.HttpClient
             
             var modelName = ExtractModelName(request) ?? _defaultModelName;
             var taskType = DetermineTaskType(request);
-            
-            using var activity = LLMTelemetry.StartLLMActivity(
+              using var activity = LlmTelemetry.StartLlmActivity(
                 modelName: modelName,
                 prompt: requestBody ?? string.Empty,
                 taskType: taskType,
                 provider: _provider,
                 options: _options);
-                
-            try
-            {
+                  try
+            {                
                 var stopwatch = Stopwatch.StartNew();
-                var response = await base.SendAsync(request, cancellationToken);
+                
+                // Use HttpOperationUtils for timeout handling
+                var response = await HttpOperationUtils.ExecuteWithTimeout(
+                    _options,
+                    async (token) => await base.SendAsync(request, token),
+                    cancellationToken).ConfigureAwait(false);
+                    
                 stopwatch.Stop();
                 
                 string? responseBody = null;
                 if (response.Content != null && (_options?.EmitTextContent ?? true))
-                {
-                    try
+                {                    try
                     {
-                        responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                        // Use HttpOperationUtils for timeout handling in response content reading
+                        responseBody = await HttpOperationUtils.ExecuteWithTimeout(
+                            _options,
+                            async (token) => await response.Content.ReadAsStringAsync(token),
+                            cancellationToken).ConfigureAwait(false);
                         
                         // Create a clone of the content since ReadAsStringAsync can consume it
                         response.Content = new StringContent(
@@ -105,20 +117,26 @@ namespace OpenInference.LLM.Telemetry.Extensions.HttpClient
                         // Log error but continue with the response
                         System.Diagnostics.Debug.WriteLine($"Error reading response body: {ex.Message}");
                     }
-                }
-                
-                LLMTelemetry.EndLLMActivity(
+                }                
+                LlmTelemetry.EndLlmActivity(
                     activity: activity,
                     response: responseBody ?? string.Empty,
                     isSuccess: response.IsSuccessStatusCode,
                     latencyMs: stopwatch.ElapsedMilliseconds,
                     options: _options);
-                
-                return response;
+                  return response;
             }
-            catch (Exception ex)
+            catch (TimeoutException ex)
+            {                // Specifically handle timeout exceptions with detailed information
+                LlmTelemetry.RecordException(
+                    activity, 
+                    ex, 
+                    $"HTTP operation timed out after {_options?.HttpOperationTimeoutMs ?? 0}ms");
+                
+                throw;
+            }            catch (Exception ex)
             {
-                LLMTelemetry.RecordException(activity, ex);
+                LlmTelemetry.RecordException(activity, ex);
                 throw;
             }
         }
