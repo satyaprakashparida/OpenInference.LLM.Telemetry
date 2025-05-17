@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using OpenInference.LLM.Telemetry.Core;
 using OpenInference.LLM.Telemetry.Core.Models;
 using OpenInference.LLM.Telemetry.Core.Utilities;
 using OpenInference.LLM.Telemetry.Extensions.OpenTelemetry.Instrumentation;
@@ -20,8 +21,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.DependencyInjection
         {
             return AddOpenInferenceTelemetry(services, new LlmInstrumentationOptions());
         }
-        
-        /// <summary>
+          /// <summary>
         /// Adds OpenInference LLM telemetry services to the DI container with the specified options.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
@@ -34,9 +34,12 @@ namespace OpenInference.LLM.Telemetry.Extensions.DependencyInjection
                 
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
+                
+            // Validate options
+            OptionsValidator.ValidateOptionsAndThrow(options);
 
             // Configure global options
-            LLMTelemetry.Configure(opt => 
+            LlmTelemetry.Configure(opt => 
             {
                 opt.EmitTextContent = options.EmitTextContent;
                 opt.MaxTextLength = options.MaxTextLength;
@@ -49,6 +52,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.DependencyInjection
                 opt.IncludeDocumentContent = options.IncludeDocumentContent;
                 opt.CaptureToolCallDetails = options.CaptureToolCallDetails;
                 opt.EmitMetrics = options.EmitMetrics;
+                opt.HttpOperationTimeoutMs = options.HttpOperationTimeoutMs;
                 opt.CaptureStructuredErrors = options.CaptureStructuredErrors;
                 
                 // Copy any default attributes

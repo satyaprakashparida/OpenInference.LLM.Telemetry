@@ -80,7 +80,7 @@ The library consists of several components that work together to provide compreh
 │                                                                 │
 │  ┌───────────────────┐       ┌───────────────────────────────┐  │
 │  │                   │       │                               │  │
-│  │  LLM API Client   │◀─────▶│  LLMTelemetryHandler          │  │
+│  │  LLM API Client   │◀─────▶│  LlmTelemetryHandler          │  │
 │  │                   │       │  (Async HTTP Telemetry)       │  │
 │  └───────────────────┘       └───────────────────────────────┘  │
 │            │                               │                    │
@@ -90,7 +90,7 @@ The library consists of several components that work together to provide compreh
 │  │  Your LLM Logic   │                     ▼                    │
 │  │                   │        ┌───────────────────────────────┐ │
 │  └───────────────────┘        │                               │ │
-│            │                  │  LLMTelemetry                 │ │
+│            │                  │  LlmTelemetry                 │ │
 │            │                  │  (Core Telemetry Methods)     │ │
 │            ▼                  │                               │ │
 │  ┌───────────────────┐        └───────────────────────────────┘ │
@@ -124,8 +124,8 @@ The library consists of several components that work together to provide compreh
 
 ### Components:
 
-1. **LLMTelemetryHandler**: Intercepts HTTP requests to LLM APIs and automatically adds telemetry with proper async/await patterns for all network operations.
-2. **LLMTelemetry**: Core static class with fully documented methods following C# standards, using underscore (_) prefixed private fields and proper error handling.
+1. **LlmTelemetryHandler**: Intercepts HTTP requests to LLM APIs and automatically adds telemetry with proper async/await patterns for all network operations.
+2. **LlmTelemetry**: Core static class with fully documented methods following C# standards, using underscore (_) prefixed private fields and proper error handling.
 3. **LlmInstrumentation**: Integration with OpenTelemetry for standardized tracing with full XML documentation and async operation support.
 4. **Manual Instrumentation**: Optional direct instrumentation for custom scenarios with examples following best C# coding practices.
 
@@ -158,7 +158,7 @@ builder.Services.AddOpenInferenceLlmTelemetry(options => {
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracingProviderBuilder =>
         tracingProviderBuilder
-            .AddSource(LLMTelemetry.ActivitySourceName) // Source from this SDK
+        .AddSource(LlmTelemetry.ActivitySource) // Source from this SDK
             // Add other sources from your application as needed
             // .AddSource("MyApplicationActivitySource") 
             .ConfigureResource(resource => resource.AddService("MyLlmService"))
@@ -184,7 +184,7 @@ services.AddHttpClient("AzureOpenAI", client => {
     client.BaseAddress = new Uri("https://your-resource.openai.azure.com/");
     client.DefaultRequestHeaders.Add("api-key", "your-api-key");
 })
-.AddLLMTelemetry(
+.AddLlmTelemetry(
     defaultModelName: "gpt-4", 
     provider: "azure");
 ```
@@ -192,8 +192,8 @@ services.AddHttpClient("AzureOpenAI", client => {
 #### Direct Instrumentation
 
 ```csharp
-// Use the core LLMTelemetry class directly
-using var activity = LLMTelemetry.StartLLMActivity(
+// Use the core LlmTelemetry class directly
+using var activity = LlmTelemetry.StartLlmActivity(
     modelName: "gpt-4",
     prompt: "Explain quantum computing",
     taskType: "chat",
@@ -204,7 +204,7 @@ try
     // Perform your LLM operation
     var response = await client.GetChatCompletionsAsync(options);
     
-    LLMTelemetry.EndLLMActivity(
+    LlmTelemetry.EndLlmActivity(
         activity: activity,
         response: response.Value.Choices[0].Message.Content,
         isSuccess: true,
@@ -212,7 +212,7 @@ try
 }
 catch (Exception ex)
 {
-    LLMTelemetry.RecordException(activity, ex);
+    LlmTelemetry.RecordException(activity, ex);
     throw;
 }
 ```

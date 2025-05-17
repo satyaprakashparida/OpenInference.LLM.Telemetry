@@ -15,12 +15,12 @@ namespace OpenInference.LLM.Telemetry.Extensions.HttpClient
         /// <param name="defaultModelName">Default model name to use if not detected in request</param>
         /// <param name="provider">LLM provider name (e.g., "azure", "openai")</param>
         /// <returns>The modified IHttpClientBuilder</returns>
-        public static IHttpClientBuilder AddLLMTelemetry(
+        public static IHttpClientBuilder AddLlmTelemetry(
             this IHttpClientBuilder builder,
             string defaultModelName,
             string provider)
         {
-            return builder.AddLLMTelemetry(defaultModelName, provider, null);
+            return builder.AddLlmTelemetry(defaultModelName, provider, null);
         }
         
         /// <summary>
@@ -31,7 +31,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.HttpClient
         /// <param name="provider">LLM provider name (e.g., "azure", "openai")</param>
         /// <param name="options">Custom instrumentation options</param>
         /// <returns>The modified IHttpClientBuilder</returns>
-        public static IHttpClientBuilder AddLLMTelemetry(
+        public static IHttpClientBuilder AddLlmTelemetry(
             this IHttpClientBuilder builder,
             string defaultModelName,
             string provider,
@@ -52,7 +52,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.HttpClient
         /// <param name="defaultModelName">Default model name to use if not detected in request</param>
         /// <param name="provider">LLM provider name (e.g., "azure", "openai")</param>
         /// <returns>The modified IHttpClientBuilder</returns>
-        public static IHttpClientBuilder AddLLMTelemetryWithDI(
+        public static IHttpClientBuilder AddLlmTelemetryWithDI(
             this IHttpClientBuilder builder,
             string defaultModelName,
             string provider)

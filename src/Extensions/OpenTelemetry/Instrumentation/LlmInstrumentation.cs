@@ -33,7 +33,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry.Instrumentation
             if (operationData == null)
                 throw new ArgumentNullException(nameof(operationData));
 
-            var activity = LLMTelemetry.StartLLMActivity(
+            var activity = LlmTelemetry.StartLlmActivity(
                 modelName: operationData.ModelName ?? "unknown",
                 prompt: operationData.Prompt ?? string.Empty,
                 taskType: operationData.TaskType ?? "unknown",
@@ -42,7 +42,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry.Instrumentation
 
             if (activity != null)
             {
-                LLMTelemetry.EndLLMActivity(
+                LlmTelemetry.EndLlmActivity(
                     activity: activity,
                     response: operationData.Response ?? string.Empty,
                     isSuccess: operationData.IsSuccess,
@@ -80,7 +80,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry.Instrumentation
         /// <returns>The created Activity</returns>
         public Activity? StartOperation(string modelName, string prompt, string taskType, string provider)
         {
-            return LLMTelemetry.StartLLMActivity(
+            return LlmTelemetry.StartLlmActivity(
                 modelName: modelName,
                 prompt: prompt,
                 taskType: taskType,
@@ -99,7 +99,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry.Instrumentation
         {
             if (activity == null) return;
             
-            LLMTelemetry.EndLLMActivity(
+            LlmTelemetry.EndLlmActivity(
                 activity: activity,
                 response: response,
                 isSuccess: isSuccess,
@@ -114,7 +114,7 @@ namespace OpenInference.LLM.Telemetry.Extensions.OpenTelemetry.Instrumentation
         /// <param name="exception">The exception that occurred</param>
         public void RecordException(Activity? activity, Exception exception)
         {
-            LLMTelemetry.RecordException(activity, exception);
+            LlmTelemetry.RecordException(activity, exception);
         }
     }
 }
